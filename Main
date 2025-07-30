@@ -1,0 +1,335 @@
+//°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°/
+// Universidad del Valle de Guatemala
+// BE3029- Electronica digital 2
+// youri Estrada
+// Laboratorio 3
+// MCU: ESP32
+//°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°°/
+
+// Librerias
+#include <Arduino.h>
+#include <stdint.h>
+
+// Definiciones
+#define LED1 25
+#define LED2 26
+#define LED3 27
+#define LED4 14
+#define LED5 5
+#define LED6 16
+#define LED7 4
+#define LED8 0
+#define LEDA 21
+
+#define bt1 17
+#define bt2 18
+#define bt3 15 //pin touch
+#define delayBounce 200 //configurable segun necesidad fisica de los botones si el debounce no funcionara
+
+// Prototipos de funciones
+void initBoton1(void);
+void initBoton2(void);
+void IRAM_ATTR BTN1_ISR (void);
+void IRAM_ATTR BTN2_ISR (void);
+void initTMR0(void);
+void IRAM_ATTR BTN3_ISR(void);
+
+// Variables globales
+volatile uint32_t contador;
+volatile uint32_t contador1;
+volatile bool btn1Pressed;
+volatile bool btn2Pressed;
+volatile uint32_t lastISRBtn1 = 0;
+volatile uint32_t lastISRBtn2 = 0;
+//Paso 1: Instanciar timer
+hw_timer_t * Timer0_Cfg = NULL;
+
+//ISRs - Rutinas de interrupcion
+void IRAM_ATTR BTN1_ISR (void){
+  uint32_t tiempoActual1 = millis();
+
+  if(tiempoActual1 - lastISRBtn1 > delayBounce){ //antirebote
+    btn1Pressed = true;
+    contador++;
+    if(contador==16){
+      contador=0; //evita que tenga maximo o minimo
+    }
+    lastISRBtn1 = tiempoActual1;
+  }
+  
+}
+void IRAM_ATTR BTN2_ISR (void){
+  uint32_t tiempoActual2 = millis();
+  if(tiempoActual2 - lastISRBtn2 > delayBounce){ //antirebote
+    btn1Pressed = true;
+    contador--;
+    if(contador==-1){
+      contador=15;//evita que tenga maximo o minimo
+    }
+    lastISRBtn2 = tiempoActual2;
+  }
+  
+}
+void IRAM_ATTR TMR0_ISR(void){
+  contador1++;
+  if(contador1==16){
+    contador1=0; //evita que el timer pare su funcionalidad
+  }
+}
+
+// Configuracion
+void setup() {
+  pinMode(LED1, OUTPUT);
+  pinMode(LED2, OUTPUT);
+  pinMode(LED3, OUTPUT);
+  pinMode(LED4, OUTPUT);
+  pinMode(LED5, OUTPUT);
+  pinMode(LED6, OUTPUT);
+  pinMode(LED7, OUTPUT);
+  pinMode(LED8, OUTPUT);
+  pinMode(LEDA, OUTPUT);
+  Serial.begin(115200);
+  initBoton1();
+  initBoton2();
+  initTMR0();
+  contador=0;
+  contador1=0;
+}
+
+// Loop infinito
+void loop() {
+  // put your main code here, to run repeatedly:
+switch (contador){
+      case 0:
+          digitalWrite(LED4, LOW);
+          digitalWrite(LED3, LOW);
+          digitalWrite(LED2, LOW);
+          digitalWrite(LED1, LOW);
+        break;
+      case 1: 
+        digitalWrite(LED1, HIGH);
+        digitalWrite(LED2, LOW);
+        digitalWrite(LED3, LOW);
+        digitalWrite(LED4, LOW);
+        break;
+      case 2:
+        digitalWrite(LED4, LOW);
+        digitalWrite(LED3, LOW);
+        digitalWrite(LED2, HIGH);
+        digitalWrite(LED1, LOW);
+        break;
+      case 3: 
+        digitalWrite(LED4, LOW);
+        digitalWrite(LED3, LOW);
+        digitalWrite(LED2, HIGH);
+        digitalWrite(LED1, HIGH);
+        break;
+      case 4: 
+        digitalWrite(LED4, LOW);
+        digitalWrite(LED3, HIGH);
+        digitalWrite(LED2, LOW);
+        digitalWrite(LED1, LOW);
+        break;
+      case 5:
+        digitalWrite(LED4, LOW);
+        digitalWrite(LED3, HIGH);
+        digitalWrite(LED2, LOW);
+        digitalWrite(LED1, HIGH);
+        break;
+      case 6: 
+        digitalWrite(LED4, LOW);
+        digitalWrite(LED3, HIGH);
+        digitalWrite(LED2, HIGH);
+        digitalWrite(LED1, LOW);
+        break;
+      case 7: 
+        digitalWrite(LED4, LOW);
+        digitalWrite(LED3, HIGH);
+        digitalWrite(LED2, HIGH);
+        digitalWrite(LED1, HIGH);
+        break;
+      case 8:
+        digitalWrite(LED4, HIGH);
+        digitalWrite(LED3, LOW);
+        digitalWrite(LED2, LOW);
+        digitalWrite(LED1, LOW);
+        break;
+      case 9:
+        digitalWrite(LED4, HIGH);
+        digitalWrite(LED3, LOW);
+        digitalWrite(LED2, LOW);
+        digitalWrite(LED1, HIGH);
+        break;
+      case 10:
+        digitalWrite(LED4, HIGH);
+        digitalWrite(LED3, LOW);
+        digitalWrite(LED2, HIGH);
+        digitalWrite(LED1, LOW);
+        break;
+      case 11:
+        digitalWrite(LED4, HIGH);
+        digitalWrite(LED3, LOW);
+        digitalWrite(LED2, HIGH);
+        digitalWrite(LED1, HIGH);
+        break;
+      case 12:
+        digitalWrite(LED4, HIGH);
+        digitalWrite(LED3, HIGH);
+        digitalWrite(LED2, LOW);
+        digitalWrite(LED1, LOW);
+        break;
+      case 13:
+        digitalWrite(LED4, HIGH);
+        digitalWrite(LED3, HIGH);
+        digitalWrite(LED2, LOW);
+        digitalWrite(LED1, HIGH);
+        break;
+      case 14:
+        digitalWrite(LED4, HIGH);
+        digitalWrite(LED3, HIGH);
+        digitalWrite(LED2, HIGH);
+        digitalWrite(LED1, LOW);
+        break;
+      case 15:
+        digitalWrite(LED4, HIGH);
+        digitalWrite(LED3, HIGH);
+        digitalWrite(LED2, HIGH);
+        digitalWrite(LED1, HIGH);
+        break;
+      }      
+switch (contador1){
+      case 0:
+          digitalWrite(LED8, LOW);
+          digitalWrite(LED7, LOW);
+          digitalWrite(LED6, LOW);
+          digitalWrite(LED5, LOW);
+        break;
+      case 1: 
+        digitalWrite(LED5, HIGH);
+        digitalWrite(LED6, LOW);
+        digitalWrite(LED7, LOW);
+        digitalWrite(LED8, LOW);
+        break;
+      case 2:
+        digitalWrite(LED8, LOW);
+        digitalWrite(LED7, LOW);
+        digitalWrite(LED6, HIGH);
+        digitalWrite(LED5, LOW);
+        break;
+      case 3: 
+        digitalWrite(LED8, LOW);
+        digitalWrite(LED7, LOW);
+        digitalWrite(LED6, HIGH);
+        digitalWrite(LED5, HIGH);
+        break;
+      case 4: 
+        digitalWrite(LED8, LOW);
+        digitalWrite(LED7, HIGH);
+        digitalWrite(LED6, LOW);
+        digitalWrite(LED5, LOW);
+        break;
+      case 5:
+        digitalWrite(LED8, LOW);
+        digitalWrite(LED7, HIGH);
+        digitalWrite(LED6, LOW);
+        digitalWrite(LED5, HIGH);
+        break;
+      case 6: 
+        digitalWrite(LED8, LOW);
+        digitalWrite(LED7, HIGH);
+        digitalWrite(LED6, HIGH);
+        digitalWrite(LED5, LOW);
+        break;
+      case 7: 
+        digitalWrite(LED8, LOW);
+        digitalWrite(LED7, HIGH);
+        digitalWrite(LED6, HIGH);
+        digitalWrite(LED5, HIGH);
+        break;
+      case 8:
+        digitalWrite(LED8, HIGH);
+        digitalWrite(LED7, LOW);
+        digitalWrite(LED6, LOW);
+        digitalWrite(LED5, LOW);
+        break;
+      case 9:
+        digitalWrite(LED8, HIGH);
+        digitalWrite(LED7, LOW);
+        digitalWrite(LED6, LOW);
+        digitalWrite(LED5, HIGH);
+        break;
+      case 10:
+        digitalWrite(LED8, HIGH);
+        digitalWrite(LED7, LOW);
+        digitalWrite(LED6, HIGH);
+        digitalWrite(LED5, LOW);
+        break;
+      case 11:
+        digitalWrite(LED8, HIGH);
+        digitalWrite(LED7, LOW);
+        digitalWrite(LED6, HIGH);
+        digitalWrite(LED5, HIGH);
+        break;
+      case 12:
+        digitalWrite(LED8, HIGH);
+        digitalWrite(LED7, HIGH);
+        digitalWrite(LED6, LOW);
+        digitalWrite(LED5, LOW);
+        break;
+      case 13:
+        digitalWrite(LED8, HIGH);
+        digitalWrite(LED7, HIGH);
+        digitalWrite(LED6, LOW);
+        digitalWrite(LED5, HIGH);
+        break;
+      case 14:
+        digitalWrite(LED8, HIGH);
+        digitalWrite(LED7, HIGH);
+        digitalWrite(LED6, HIGH);
+        digitalWrite(LED5, LOW);
+        break;
+      case 15:
+        digitalWrite(LED8, HIGH);
+        digitalWrite(LED7, HIGH);
+        digitalWrite(LED6, HIGH);
+        digitalWrite(LED5, HIGH);
+        break;
+      }  
+  if (contador==contador1)
+  {
+   contador1=0;
+   if (digitalRead(LEDA))
+   {
+    digitalWrite(LEDA,LOW);
+   } else{
+    digitalWrite(LEDA, HIGH);
+   }
+  }
+  if(touchRead(bt3)<40){ //el numero acompañado del touch read es un valor de sensibilidad esperado, 
+    //por lo que si se llegase a activar sin querer se puede variar hasta encontrar valor optimo
+    contador1=0;
+  }
+  
+} 
+
+// Otras funciones
+
+void initBoton1(void){
+  pinMode(bt1, INPUT_PULLDOWN);
+  attachInterrupt(bt1, &BTN1_ISR, FALLING);
+}
+void initBoton2(void){
+  pinMode(bt2, INPUT_PULLUP);
+  attachInterrupt(bt2, &BTN2_ISR, FALLING);
+}
+
+void initTMR0(void){
+  //Paso 2: Configurar timer 0
+  Timer0_Cfg = timerBegin(0, 80, true); //Cuando es temporizador no importa el flag (True)
+  //Paso 3: configurar handler ISR
+  timerAttachInterrupt(Timer0_Cfg, &TMR0_ISR, true);
+  //Paso 4: Configurar alarma (Timer Ticks)
+  timerAlarmWrite(Timer0_Cfg, 500000, true);
+  //Paso 5: Iniciar la alarma
+  timerAlarmEnable(Timer0_Cfg);
+}
