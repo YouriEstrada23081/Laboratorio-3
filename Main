@@ -329,7 +329,7 @@ void initTMR0(void){
   //Paso 3: configurar handler ISR
   timerAttachInterrupt(Timer0_Cfg, &TMR0_ISR, true);
   //Paso 4: Configurar alarma (Timer Ticks)
-  timerAlarmWrite(Timer0_Cfg, 500000, true);
+  timerAlarmWrite(Timer0_Cfg, 250000, true); //cambiar los ticks segun lo que se necesite
   //Paso 5: Iniciar la alarma
   timerAlarmEnable(Timer0_Cfg);
 }
